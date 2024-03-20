@@ -12,6 +12,9 @@ int main() {
     return 1;
   }
 
+  printf("Size of registers: %lu bits\n", sizeof(registers) * 8);
+  printf("Size of unsigned long int: %lu bits\n", sizeof(unsigned int) * 8);
+
   size_t numElements = sizeof(registers) / sizeof(unsigned int);
   for (size_t i = 0; i < numElements; ++i) {
     fwrite(&registers[i], sizeof(unsigned int), 1, file);

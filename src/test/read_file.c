@@ -15,33 +15,25 @@ int main() {
 
   // Calcular el número de elementos y reservar memoria
   size_t numElements = fileSize / sizeof(unsigned int);
-  unsigned int *numbers = malloc(numElements * sizeof(unsigned int));
-  if (numbers == NULL) {
-    printf("Error al reservar memoria.\n");
-    fclose(file);
-    return 1;
-  }
+  printf("El archivo contiene %u elementos\n", numElements);
+  unsigned int *buffer = malloc(numElements * sizeof(unsigned int));
 
   // Leer los datos del archivo
   unsigned int readCount =
-      fread(numbers, sizeof(unsigned int), numElements, file);
-  if (readCount < numElements) {
-    printf("No se leyeron todos los elementos esperados.\n");
-    // Manejar este error como mejor te parezca
-  }
+      fread(buffer, sizeof(unsigned int), numElements, file);
 
   // Operar con los números leídos...
   // Por ejemplo, imprimirlos
   unsigned int sum = 0;
   for (size_t i = 0; i < numElements; ++i) {
-    printf("0x%04x\n", *(numbers + i));
-    sum += *(numbers + i);
+    printf("0x%08x\n", *(buffer + i));
+    sum += *(buffer + i);
   }
   printf("--FIN DEL ARCHIVO--\n");
-  printf("Suma: 0x%04x\n", sum);
+  printf("Suma: 0x%08x\n", sum);
 
   // Limpiar
-  free(numbers);
+  free(buffer);
   fclose(file);
 
   return 0;
