@@ -1,41 +1,52 @@
 .global _start
 
+
 .section .data
-  file_path: .asciz "input.bin"
-  buffer: .space 4
+  EjemploFloat: .float 4.566
+  constante: .float 75.0
+  name_input: .asciz "input.bin"
+  name_output: .asciz "output.bin"  
+  buffer: .space 10000    @ reserved buffer
 
 .section .text
 _start:
+  @ Open the file
+  mov r7, #0x5            
+  ldr r0, =name_input     
+  mov r1, #2              
+  mov r2, #0              
+  swi 0                   
 
-  // fopen("input.bin", "rb")
+  @ Read the file with buffer
+  mov r7, #0x3            
+  ldr r1, =buffer   
+  ldr r2, =#12       @ buffer size
+  swi 0   
 
-  ldr r0, =file_path    // direccion del nombre del archivo en memoria
-  mov r1, #0            // 0 = O_RDONLY, abrir para lectura
-  mov r7, #5            // 5 = sys_open
-  svc 0                 // Realizar llamada al sistema
-  mov r4, r0            // Guardar el descriptor de archivo en r4 (asumiendo éxito)
+ ldr r1, =buffer
+  @ Load the first 32-bit number into r8
+  ldr r8, [r1]            @ load first 32 bits into r8
+  @ Load the second 32-bit number into r9
+  ldr r9, [r1, #4]        @ load next 32 bits (offset by 4 bytes) into r9
 
-_open_check: 
-  // fread(buffer, size, count, filePointer)
+  @ Open the file output file
 
-  ldr r0, =buffer       // Dirección del buffer
-  mov r1, r4            // Descriptor de archivo
-  mov r2, #4            // Leer 4 bytes (tamaño de unsigned int)
-  mov r7, #3            // 3 = sys_read
-  svc 0                 // Realizar llamada al sistema
+  @ @ Write the buffer of the output file
+  @ mov r7, #0x4            
+  @ ldr r1, =buffer   
+  @ ldr r2, =12         @ buffer size
+  @ swi 0                   
+_end:
+  @ Close input
+  mov r7, #6              
+  swi 0                   
 
-_read_check:
+  @ @ Close output
+  @ mov r7, #6             
+  @ swi 0                  
 
-  // leer el valor
-  ldr r8, [r0]         // Carga el valor leído en r8
+  @ Finish program
+  mov r7, #0x1            
+  mov r0, #0             
+  swi 0
 
-  // fclose(filePointer)
-  mov r0, r4            // Descriptor de archivo
-  mov r7, #6            // 6 = sys_close
-  svc 0                 // Realizar llamada al sistema
-
-
-_exit:
-  mov r0, #0            // Código de salida
-  mov r7, #1            // 1 = sys_exit
-  svc 0                 // Realizar llamada al sistema

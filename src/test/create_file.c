@@ -2,7 +2,7 @@
 
 int main() {
   // Números a escribir en el archivo.
-  unsigned int registers[] = {0x0180, 0x0340};
+  unsigned int registers[] = {0xff000, 0x04020};
 
   // Abrir el archivo en modo de escritura binaria.
   FILE *file =
