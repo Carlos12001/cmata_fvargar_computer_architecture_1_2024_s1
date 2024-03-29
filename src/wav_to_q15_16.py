@@ -1,23 +1,36 @@
 import wave
 import numpy as np
 
-def wav_to_q15_16(wav_filename, bin_filename, k, alpha):
+def wav_to_q15_16(k,alpha,wav_filename,bin_filename="input.bin"):
     """
     Convert WAV to binary format, with additional parameters k and alpha.
     
     Parameters:
-    wav_filename (str): Name of the input WAV file.
-    bin_filename (str): Name of the output binary file.
     k (int): An unsigned integer parameter.
     alpha (float): A parameter in Q15.16 format.
+    wav_filename (str): Name of the input WAV file.
+    bin_filename (str): Name of the output binary file.
     """
+    if not isinstance(k, int):
+        raise TypeError("k must be an integer")
+    if not isinstance(alpha, float):
+        raise TypeError("alpha must be a float")
+    if k < 0:
+        raise ValueError("k must be non-negative")
+    if alpha < 0 or 1 < alpha:
+        raise ValueError("alpha must be in the range [0, 1]")
+
     with wave.open(wav_filename, "rb") as wav_file:
         # Read the parameters
         nchannels, sampwidth, framerate, nframes, comptype, compname = wav_file.getparams()
         
-        # Ensure the audio is mono, has a sample rate of 44100 Hz, and does not exceed 15 seconds
-        if nchannels != 1 or framerate != 44100 or nframes/framerate > 15:
-            raise ValueError("Audio must be mono, with a sample rate of 44100 Hz, and no longer than 15 seconds")
+        # Check audio parameters
+        if nchannels != 1:
+            raise ValueError("Audio must be mono")
+        if framerate != 44100:
+            raise ValueError("Audio must have a sample rate of 44100 Hz")
+        if nframes/framerate > 15:
+            raise ValueError("Audio must be no longer than 15 seconds")
         
         # Read frames
         frames = wav_file.readframes(nframes)
@@ -33,8 +46,7 @@ def wav_to_q15_16(wav_filename, bin_filename, k, alpha):
         
         # Prepare k and alpha for writing; k as uint32, alpha remains in Q15.16 format
         k_uint32 = np.array([k], dtype=np.uint32)
-        # Alpha is provided and already in Q15.16 format, but let's ensure it's an integer for storage
-        alpha_int32 = np.int32(alpha * 2**16) if not isinstance(alpha, int) else alpha
+        alpha_int32 = np.int32(alpha * 2**16)
         
         # Write to binary file
         with open(bin_filename, "wb") as bin_file:
@@ -43,5 +55,22 @@ def wav_to_q15_16(wav_filename, bin_filename, k, alpha):
             q15_16_samples.tofile(bin_file)  # Write audio data
 
 if __name__ == '__main__':
-    s = "src/"
-    wav_to_q15_16(s + "ranita.wav", s + "input.bin", 10, 0.6)
+    import os
+    s = ""
+    if os.getcwd() != '/home/carlos/Repos/cmata_fvargar_computer_architecture_1_2024_s1/src':
+        s += "src/"
+   
+    k = 10
+    alpha = 0.6
+    wavfile = s+"ranita.wav"
+    output = s+"input.bin"
+    
+    
+    try:
+        wav_to_q15_16(k,alpha,wavfile,output)
+
+        print(f"The file {wavfile} was successfully converted to {output} \
+              with k={k} and alpha={alpha}.")
+    
+    except Exception as e:
+        print(f"An error occurred: {e}")
