@@ -51,7 +51,7 @@ def wav_to_q(k,alpha,wav_filename,bin_filename="input.bin",q=30):
         q_samples = np.int32(normalized_samples * 2**q)
         
         # Prepare k and alpha for writing; k as uint32, alpha as Q format
-        k_uint32 = np.array([k], dtype=np.uint32)
+        k_uint32 = np.array([k*4], dtype=np.uint32)
         alpha_int32 = np.int32(alpha * 2**q)
         
         # Write to binary file
