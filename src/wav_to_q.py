@@ -67,7 +67,7 @@ if __name__ == "__main__":
     Tk().withdraw()
     # Open a file selection dialog and get the file path
     file_path = askopenfilename(title='Select binary file', 
-    filetypes=[('Binary files', '*.bin')])
+    filetypes=[('Binary files', '*.wav')])
     if file_path: # If a file was selected
 
         k = 10
