@@ -61,24 +61,26 @@ def wav_to_q(k,alpha,wav_filename,bin_filename="input.bin",q=30):
             q_samples.tofile(bin_file)  # Write audio data
 
 if __name__ == "__main__":
-    import os
-    s = ""
-    if os.getcwd() !=("/home/carlos/Repos"
-    "/cmata_fvargar_computer_architecture_1_2024_s1/src"):
-        
-        s += "src/"
-   
-    k = 10
-    alpha = 0.6
-    wavfile = s+"ranita.wav"
-    output = s+"input.bin"
-    
-    
-    try:
-        wav_to_q(k,alpha,wavfile,output)
+    from tkinter import Tk
+    from tkinter.filedialog import askopenfilename
+    # Initialize the GUI window and hide it
+    Tk().withdraw()
+    # Open a file selection dialog and get the file path
+    file_path = askopenfilename(title='Select binary file', 
+    filetypes=[('Binary files', '*.bin')])
+    if file_path: # If a file was selected
 
-        print(( f"The file {wavfile} was successfully converted to {output}"
-                f"with k={k} and alpha={alpha}."))
-    
-    except Exception as e:
-        print(f"An error occurred: {e}")
+        k = 10
+        alpha = 0.6
+        wavfile = file_path
+        output = "input.bin"
+        
+        
+        try:
+            wav_to_q(k,alpha,wavfile,output)
+
+            print(( f"The file {wavfile} was successfully converted to {output}"
+                    f"with k={k} and alpha={alpha}."))
+        
+        except Exception as e:
+            print(f"An error occurred: {e}")

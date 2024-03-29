@@ -36,19 +36,21 @@ def q_to_wav(bin_filename, wav_filename, q=30):
         wav_file.writeframes(audio_samples.tobytes())
 
 if __name__ == "__main__":
-    import os
-    s = ""
-    if os.getcwd() !=("/home/carlos/Repos"
-    "/cmata_fvargar_computer_architecture_1_2024_s1/src"):
-        
-        s += "src/"
+    from tkinter import Tk
+    from tkinter.filedialog import askopenfilename
+    # Initialize the GUI window and hide it
+    Tk().withdraw()
+    # Open a file selection dialog and get the file path
+    file_path = askopenfilename(title='Select binary file', 
+    filetypes=[('Binary files', '*.bin')])
+    if file_path: # If a file was selected
 
-    bin_filename = s+"input.bin"
-    wav_filename = s+"output.wav"
-    
-    try:
-        q_to_wav(bin_filename, wav_filename)
-        print((f"The file {bin_filename} was successfully converted back"
-               f"to {wav_filename}."))
-    except Exception as e:
-        print(f"An error occurred: {e}")
+        bin_filename = file_path
+        wav_filename = "output.wav"
+        
+        try:
+            q_to_wav(bin_filename, wav_filename)
+            print((f"The file {bin_filename} was successfully converted back"
+                f"to {wav_filename}."))
+        except Exception as e:
+            print(f"An error occurred: {e}")
