@@ -22,7 +22,8 @@ def wav_to_q15_16(k,alpha,wav_filename,bin_filename="input.bin"):
 
     with wave.open(wav_filename, "rb") as wav_file:
         # Read the parameters
-        nchannels, sampwidth, framerate, nframes, comptype, compname = wav_file.getparams()
+        (nchannels, sampwidth, framerate, nframes,
+        comptype, compname) = wav_file.getparams()
         
         # Check audio parameters
         if nchannels != 1:
@@ -54,10 +55,12 @@ def wav_to_q15_16(k,alpha,wav_filename,bin_filename="input.bin"):
             bin_file.write(alpha_int32.tobytes())  # Write alpha
             q15_16_samples.tofile(bin_file)  # Write audio data
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     import os
     s = ""
-    if os.getcwd() != '/home/carlos/Repos/cmata_fvargar_computer_architecture_1_2024_s1/src':
+    if os.getcwd() !=("/home/carlos/Repos"
+    "/cmata_fvargar_computer_architecture_1_2024_s1/src"):
+        
         s += "src/"
    
     k = 10
@@ -69,8 +72,8 @@ if __name__ == '__main__':
     try:
         wav_to_q15_16(k,alpha,wavfile,output)
 
-        print(f"The file {wavfile} was successfully converted to {output} \
-              with k={k} and alpha={alpha}.")
+        print(( f"The file {wavfile} was successfully converted to {output}"
+                f"with k={k} and alpha={alpha}."))
     
     except Exception as e:
         print(f"An error occurred: {e}")
