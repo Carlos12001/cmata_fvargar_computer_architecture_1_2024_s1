@@ -15,7 +15,8 @@ int main() {
 
   // Calcular el número de elementos y reservar memoria
   size_t numElements = fileSize / sizeof(unsigned int);
-  printf("El archivo contiene %u elementos\n", numElements);
+  numElements = 2;
+  printf("El archivo contiene %lu elementos\n", numElements);
   unsigned int *buffer = malloc(numElements * sizeof(unsigned int));
 
   // Leer los datos del archivo
