@@ -252,3 +252,4 @@ src/read_file
 src/create_file
 *.disassembly
 *.csv
+src/buffer
