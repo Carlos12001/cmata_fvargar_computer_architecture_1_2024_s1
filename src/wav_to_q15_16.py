@@ -45,7 +45,7 @@ def wav_to_q15_16(k,alpha,wav_filename,bin_filename="input.bin"):
         # Convert to Q15.16
         q15_16_samples = np.int32(normalized_samples * 2**16)
         
-        # Prepare k and alpha for writing; k as uint32, alpha remains in Q15.16 format
+        # Prepare k and alpha for writing; k as uint32, alpha as Q15.16
         k_uint32 = np.array([k], dtype=np.uint32)
         alpha_int32 = np.int32(alpha * 2**16)
         
