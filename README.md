@@ -17,5 +17,5 @@ Note: If you are using Debian/Ubuntu distributions, you may need to install
 the `python3-tk` package.
 
 ```bash
-sudo apt install python3-tk
+sudo apt install python3-tk -y
 ```
