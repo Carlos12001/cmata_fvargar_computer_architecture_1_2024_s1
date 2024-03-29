@@ -80,7 +80,7 @@ if __name__ == "__main__":
             wav_to_q(k,alpha,wavfile,output)
 
             print(( f"The file {wavfile} was successfully converted to {output}"
-                    f"with k={k} and alpha={alpha}."))
+                    f" with k={k} and alpha={alpha}."))
         
         except Exception as e:
             print(f"An error occurred: {e}")
