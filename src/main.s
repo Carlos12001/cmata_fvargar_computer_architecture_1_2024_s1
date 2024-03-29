@@ -2,8 +2,6 @@
 
 
 .section .data
-  EjemploFloat: .float 4.566
-  constante: .float 75.0
   name_input: .asciz "input.bin"
   name_output: .asciz "output.bin"  
   buffer: .space 10000    @ reserved buffer
@@ -20,21 +18,23 @@ _start:
   @ Read the file with buffer
   mov r7, #0x3            
   ldr r1, =buffer   
-  ldr r2, =#12       @ buffer size
+  ldr r2, =#8       @ buffer size
   swi 0   
 
  ldr r1, =buffer
   @ Load the first 32-bit number into r8
   ldr r8, [r1]            @ load first 32 bits into r8
   @ Load the second 32-bit number into r9
-  ldr r9, [r1, #4]        @ load next 32 bits (offset by 4 bytes) into r9
+  ldr r9, [r1, #4] 
+  
+  add r10, r8, r9       @ load next 32 bits (offset by 4 bytes) into r9
 
   @ Open the file output file
 
   @ @ Write the buffer of the output file
   @ mov r7, #0x4            
   @ ldr r1, =buffer   
-  @ ldr r2, =12         @ buffer size
+  @ ldr r2, =8        @ buffer size
   @ swi 0                   
 _end:
   @ Close input
