@@ -21,7 +21,7 @@ _start:
   ldr r2, =#8       @ buffer size
   swi 0   
 
- ldr r1, =buffer
+  ldr r1, =buffer
   @ Load the first 32-bit number into r8
   ldr r8, [r1]            @ load first 32 bits into r8
   @ Load the second 32-bit number into r9
