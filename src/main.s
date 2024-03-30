@@ -22,7 +22,7 @@ _start:
   @ Read the file with buffer
   mov r7, #3            
   ldr r1, =buffer   
-  ldr r2, =#8       @ buffer size
+  ldr r2, =12       @ buffer size
   swi 0   
 
   ldr r1, =buffer
@@ -33,12 +33,20 @@ _start:
   
   add r10, r8, r9       @ load next 32 bits (offset by 4 bytes) into r9
 
+  ldr r11, =0x10000000
+  str r11, [r1, #8]
+
   @ Open the file output file
+  mov r7, #5            
+  ldr r0, =name_output   
+  mov r1, #66             
+  mov r2, #438            
+  swi 0      
 
   @ Write the buffer of the output file
   mov r7, #4            
   ldr r1, =buffer   
-  ldr r2, =8        @ buffer size
+  ldr r2, =12        @ buffer size
   swi 0                   
 _end:
   @ Close input
