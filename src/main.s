@@ -18,6 +18,7 @@ _start:
   mov r1, #2              
   mov r2, #0              
   swi 0                   
+  mov r4, r0            @ save the direction of input.bin
 
   @ Read the file with buffer
   mov r7, #3            
@@ -42,6 +43,7 @@ _start:
   mov r1, #66      @ Flags for write-only, create, truncate       
   mov r2, #438     @ Permissions -rw-r--r--
   swi 0      
+  mov r5, r0 @ save the direction of output.bin 
 
   @ Write the buffer of the output file
   mov r7, #4            
@@ -49,12 +51,14 @@ _start:
   ldr r2, =12        @ buffer size
   swi 0                   
 _end:
-  @ Close input
+  @ Close input.bin
   mov r7, #6              
+  mov r0, r4       
   swi 0                   
 
-  @ Close output
+  @ Close output.bin
   mov r7, #6             
+  mov r0, r5 
   swi 0                  
 
   @ Finish program
