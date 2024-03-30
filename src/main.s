@@ -39,8 +39,8 @@ _start:
   @ Open the file output file
   mov r7, #5            
   ldr r0, =name_output   
-  mov r1, #66             
-  mov r2, #438            
+  mov r1, #66      @ Flags for write-only, create, truncate       
+  mov r2, #438     @ Permissions -rw-r--r--
   swi 0      
 
   @ Write the buffer of the output file
