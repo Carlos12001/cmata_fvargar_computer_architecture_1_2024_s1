@@ -18,24 +18,8 @@ _start:
   mov r1, #2              
   mov r2, #0              
   swi 0                   
-  mov r4, r0            @ save the direction of input.bin
+  mov r4, r0
 
-  @ Read the file with buffer
-  mov r7, #3            
-  ldr r1, =buffer   
-  ldr r2, =12       @ buffer size
-  swi 0   
-
-  ldr r1, =buffer
-  @ Load the first 32-bit number into r8
-  ldr r8, [r1]            @ load first 32 bits into r8
-  @ Load the second 32-bit number into r9
-  ldr r9, [r1, #4] 
-  
-  add r10, r8, r9       @ load next 32 bits (offset by 4 bytes) into r9
-
-  ldr r11, =0x10000000
-  str r11, [r1, #8]
 
   @ Open the file output file
   mov r7, #5            
@@ -43,26 +27,48 @@ _start:
   mov r1, #66      @ Flags for write-only, create, truncate       
   mov r2, #438     @ Permissions -rw-r--r--
   swi 0      
-  mov r5, r0 @ save the direction of output.bin 
+  mov r5, r0
 
-  @ Write the buffer of the output file
-  mov r7, #4            
-  ldr r1, =buffer   
-  ldr r2, =12        @ buffer size
-  swi 0                   
+
+  mov r6, #0    @ Inicializar contador de bytes leídos/escritos
+
+loop_read:
+
+  @ Read the input.bin with buffer
+  mov r7, #3                @ syscall
+  ldr r0, =buffer_size
+  ldr r2, [r0]              @ r2 load size buffer
+  mov r0, r4                @ r0 load input.bin direction
+  ldr r1, =buffer           @ r1 buffer direction
+  swi 0
+  mov r6, r0                @ store how many was read from the file
+
+  @ Check is finished to read or an error was happened
+  cmp r6, #0
+  ble _end             @ If r6 <= 0, singed less equal
+
+  @ Write on the output.bin with buffer
+  mov r7, #4                @ syscall
+  mov r0, r5                @ r0 load output.bin direction
+  ldr r1, =buffer           @ r1 load buffer direction
+  mov r2, r6                @ r2 how many byte were read it
+  swi 0
+
+  @ Star again
+  b loop_read
+
 _end:
-  @ Close input.bin
-  mov r7, #6              
-  mov r0, r4       
+  @ Close input
+  mov r7, #6              @ syscall
+  mov r0, r4              @ r0 load input.bin direction
   swi 0                   
 
-  @ Close output.bin
-  mov r7, #6             
-  mov r0, r5 
+  @ Close output
+  mov r7, #6              @ syscall
+  mov r0, r5              @ r0 load input.bin direction
   swi 0                  
 
   @ Finish program
   mov r0, #0             
   mov r7, #1            
   swi 0
-
