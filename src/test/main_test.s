@@ -1,55 +1,74 @@
 .global _start
 
+
 .section .data
-name_input: .asciz "input.bin"
-name_output: .asciz "output.bin"
-buffer: .space 10000    @ reserved buffer
+  name_input: .asciz "input.bin"
+  name_output: .asciz "output.bin"  
+  buffer: .space 1024    @ reserved buffer initialize in zero
+  buffer_size: .word 1024 @ immediate value of buffer_size
+  circular: .space 22050 @ reserved circular buffer initialize in zero
+  circular_size: .word 22050 @ immediate value of buffer_size
+
 
 .section .text
 _start:
-  @ Open the input file
-  mov r7, #0x5            
+  @ Open the file
+  mov r7, #5            
   ldr r0, =name_input     
   mov r1, #2              
   mov r2, #0              
   swi 0                   
-  mov r4, r0              @ Save the input file descriptor
+  mov r4, r0
 
-  @ Initialize read counter to know when to load r8, r9
-  mov r6, #0
 
-  @ Read the file with buffer in a loop
-read_loop:
-  mov r7, #0x3            
-  ldr r0, =r4             
-  ldr r1, =buffer         
-  ldr r2, =10000          @ Adjust buffer size as needed
-  swi 0                   
-  cmp r0, #0              @ Compare the return value; 0 indicates EOF
-  beq process_last        @ If EOF, process last value and jump to close input file
+  @ Open the file output file
+  mov r7, #5            
+  ldr r0, =name_output   
+  mov r1, #66      @ Flags for write-only, create, truncate       
+  mov r2, #438     @ Permissions -rw-r--r--
+  swi 0      
+  mov r5, r0
 
-  @ Only load the first two values once
+
+  mov r6, #0    @ Inicializar contador de bytes leídos/escritos
+
+loop_read:
+
+  @ Read the input.bin with buffer
+  mov r7, #3                @ syscall
+  ldr r0, =buffer_size
+  ldr r2, [r0]              @ r2 load size buffer
+  mov r0, r4                @ r0 load input.bin direction
+  ldr r1, =buffer           @ r1 buffer direction
+  swi 0
+  mov r6, r0                @ store how many was read from the file
+
+  @ Check is finished to read or an error was happened
   cmp r6, #0
-  beq load_first_two
-  b continue_read
+  ble _end             @ If r6 <= 0, singed less equal
 
-load_first_two:
-  ldr r8, [r1]            @ Load the first value into r8
-  ldr r9, [r1, #4]        @ Load the second value into r9
-  add r6, r6, #1          @ Increment read counter
+  @ Write on the output.bin with buffer
+  mov r7, #4                @ syscall
+  mov r0, r5                @ r0 load output.bin direction
+  ldr r1, =buffer           @ r1 load buffer direction
+  mov r2, r6                @ r2 how many byte were read it
+  swi 0
 
-continue_read:
-  @ Write the buffer to the output file directly
-  mov r7, #0x4            
-  ldr r0, =r5             
+  @ Star again
+  b loop_read
+
+_end:
+  @ Close input
+  mov r7, #6              @ syscall
+  mov r0, r4              @ r0 load input.bin direction
   swi 0                   
 
-  b read_loop             @ Loop back to read more
+  @ Close output
+  mov r7, #6              @ syscall
+  mov r0, r5              @ r0 load input.bin direction
+  swi 0                  
 
-process_last:
-  @ Load the last value into r10
-  ldr r10, [r1, r2, #-4]  @ Load the last 32-bit value into r10
-
-  @ Continue to close input...
-
-  @ The rest of your code for closing files and ending the program remains the same
+  @ Finish program
+  mov r0, #0             
+  mov r7, #1            
+  swi 0
