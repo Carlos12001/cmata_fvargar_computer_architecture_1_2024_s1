@@ -53,12 +53,14 @@ def wav_to_q(k,alpha,wav_filename,bin_filename="input.bin",q=30):
         # Prepare k and alpha for writing; k as uint32, alpha as Q format
         k_uint32 = np.array([k*4], dtype=np.uint32)
         alpha_int32 = np.int32(alpha * 2**q)
+        # last_number = np.int32(0.5*2**q)
         
         # Write to binary file
         with open(bin_filename, "wb") as bin_file:
             k_uint32.tofile(bin_file)  # Write k
             bin_file.write(alpha_int32.tobytes())  # Write alpha
             q_samples.tofile(bin_file)  # Write audio data
+            # bin_file.write(last_number.tobytes())
 
 if __name__ == "__main__":
     from tkinter import Tk

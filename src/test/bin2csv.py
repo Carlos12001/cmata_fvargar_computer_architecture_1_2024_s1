@@ -3,7 +3,7 @@ import csv
 
 def format_hex(byte_value):
     """
-    Format a byte value into a hexadecimal string representation.
+    Format a byte value into a hexadecimal string representation in big endian.
 
     Args:
         byte_value (bytes): The byte value to be formatted.
@@ -11,16 +11,16 @@ def format_hex(byte_value):
     Returns:
         str: The formatted hexadecimal string representation of the byte value.
     """
-    return " ".join(f"{b:02x}" for b in byte_value)
+    return " ".join(f"{b:02x}" for b in byte_value[::-1])
 
 def format_bin(byte_value):
     """
-    Format a byte value into a binary string with spaces every 4 bits.
+    Format a byte value into a binary string with spaces every 4 bits in big endian.
     
     :param byte_value: The byte value to be formatted
     :return: A string representing the formatted binary value
     """
-    return " ".join(f"{b:08b}"[:4] + "-" + f"{b:08b}"[4:] for b in byte_value)
+    return " ".join(f"{b:08b}"[:4] + "-" + f"{b:08b}"[4:] for b in byte_value[::-1])
 
 def read_and_convert(file_path, csv_path, q=30):
     """
