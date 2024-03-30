@@ -4,19 +4,23 @@
 .section .data
   name_input: .asciz "input.bin"
   name_output: .asciz "output.bin"  
-  buffer: .space 10000    @ reserved buffer
+  buffer: .space 1024    @ reserved buffer initialize in zero
+  buffer_size: .word 1024 @ immediate value of buffer_size
+  circular: .space 22050 @ reserved circular buffer initialize in zero
+  circular_size: .word 22050 @ immediate value of buffer_size
+
 
 .section .text
 _start:
   @ Open the file
-  mov r7, #0x5            
+  mov r7, #5            
   ldr r0, =name_input     
   mov r1, #2              
   mov r2, #0              
   swi 0                   
 
   @ Read the file with buffer
-  mov r7, #0x3            
+  mov r7, #3            
   ldr r1, =buffer   
   ldr r2, =#8       @ buffer size
   swi 0   
@@ -31,22 +35,22 @@ _start:
 
   @ Open the file output file
 
-  @ @ Write the buffer of the output file
-  @ mov r7, #0x4            
-  @ ldr r1, =buffer   
-  @ ldr r2, =8        @ buffer size
-  @ swi 0                   
+  @ Write the buffer of the output file
+  mov r7, #4            
+  ldr r1, =buffer   
+  ldr r2, =8        @ buffer size
+  swi 0                   
 _end:
   @ Close input
   mov r7, #6              
   swi 0                   
 
-  @ @ Close output
-  @ mov r7, #6             
-  @ swi 0                  
+  @ Close output
+  mov r7, #6             
+  swi 0                  
 
   @ Finish program
-  mov r7, #0x1            
   mov r0, #0             
+  mov r7, #1            
   swi 0
 
