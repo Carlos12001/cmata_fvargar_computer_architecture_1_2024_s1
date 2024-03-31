@@ -2,54 +2,62 @@
 .global _start
 
 multiply_fixed_point:
-  PUSH {R4-R6, LR}
-  MOV R2, R0
-  MOV R3, R1
-  CMP R0, #0
-  RSBMI R0, R0, #0
+  push {r4-r8, lr}
+  mov r7, r2
+  mov r2, #32
+  sub r8, r2, r7
+  
+  mov r2, r0
+  mov r3, r1
+  cmp r0, #0
+  rsbmi r0, r0, #0
 
-  CMP R1, #0
-  RSBMI R1, R1, #0
-  UMULL R4, R5, R0, R1
-  EOR R2, R2, R3
+  cmp r1, #0
+  rsbmi r1, r1, #0
+  umull r4, r5, r0, r1
+  eor r2, r2, r3
 
-  TST R2, #0x80000000
-  RSBMI R4, R4, #0
-  RSBMI R5, R5, #0
-  ORRMI R4, R4, #0x80000000
-  MOV R6, #30
+  tst r2, #0x80000000
+  rsbmi r4, r4, #0
+  rsbmi r5, r5, #0
+  orrmi r4, r4, #0x80000000
+  mov r6, r7
 
-  LSR R4, R4, R6
-  ORR R4, R4, R5, LSL #2
-  MOV R0, R4
-  POP {R4-R6, PC}
+  lsr r4, r4, r6
+  orr r4, r4, r5, lsl r8
+  mov r0, r4
+  pop {r4-r8, pc}
 
+  
 
 _start:
-  ldr r10, =0xeccccccd         @-0.3
-  ldr R11, =0x2ccccccd         @0.7
+  ldr r10, =0xfccccccd         @-0.2 fccccccd
+  ldr R11, =0xfe666666       @-0.1  f8000000
   
   mov r0, r10
   mov r1, r10
+  mov r2, #28
   BL multiply_fixed_point
-  mov r4, r0  @0.09
+  mov r5, r0  @0.04 00a3d70a
   
   mov r0, r11
   mov r1, r11
+  mov r2, #28
   BL multiply_fixed_point
-  mov r5, r0 @0.49
+  mov r6, r0 @0.01 0028f5c3  
   
   mov r0, r10
   mov r1, r11
+  mov r2, #28
   BL multiply_fixed_point
-  mov r6, r0  @-0.21
+  mov r7, r0  @0.02 0051eb85
   
   mov r0, r11
   mov r1, r10
+  mov r2, #28
   BL multiply_fixed_point
-  mov r7, r0 @-0.21
+  mov r8, r0 @0.02 0051eb85
 
  
   
   B .                           
-
