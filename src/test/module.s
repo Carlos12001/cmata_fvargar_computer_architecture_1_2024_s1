@@ -13,12 +13,13 @@ module:
     B module_loop    @ Repeat loop
     
 module_end:
-  POP {PC}             @ Restore return address and return
+  POP {LR}             @ Restore return address and return
+  MOV PC, LR
 
 
 _start:
-  MOV R0, #15
-  MOV R1, #10
+  MOV R0, #9
+  MOV R1, #7
   BL module
 
   B .
