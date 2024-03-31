@@ -14,6 +14,84 @@
 
 
 .section .text
+
+load_data:
+  push {r4-r11,lr}
+  mov r4, r0
+  mov r5, r1
+
+
+  @ Read three parameters from input.bin
+  mov r7, #3                @ syscall
+  mov r0, r4                @ r0 address input.bin
+  ldr r1, =buffer           @ r1 buffer direction
+  mov r2, #12               @ r2 number of byte to read (3 numbers)
+  swi 0
+
+  @ Write three parameters from output.bin
+  mov r7, #4                @ syscall
+  mov r0, r5                @ r0 address output.bin
+  ldr r1, =buffer           @ r1 load buffer direction
+  mov r2, #12                @ r2 number of byte to write (3 numbers)
+  swi 0
+
+
+  ldr r0, =buffer           @ load address buffer
+  
+  @ Save buffer[0] in mode
+  ldr r2, [r0, #0]          @ get the element 0 from buffer
+  ldr r1, =mode             @ load address mode
+  str r2, [r1]              @ save the value in mode
+
+
+  @ Save buffer[1] in k
+  ldr r2, [r0, #4]          @ get the element 1 from buffer
+  ldr r1, =k                @ load address k
+  str r2, [r1]              @ save the value in k
+
+
+  @ Save buffer[2] in alpha
+  ldr r2, [r0, #8]          @ get the element 2 from buffer
+  ldr r1, =alpha            @ load address alpha
+  str r2, [r1]              @ save the value in alpha
+
+  @ Set the variables
+  mov r6, #0                @ Initialize byte_read_counter
+  mov r8, #0                @ Initialize offset
+  ldr r9, =circular         @ load circular address (n_k)  
+
+  loop_load_data:
+
+    @ Read the input.bin with buffer
+    mov r7, #3                @ syscall
+    ldr r0, =buffer_size
+    ldr r2, [r0]              @ r2 load size buffer
+    mov r0, r4                @ r0 load input.bin direction
+    ldr r1, =buffer           @ r1 buffer direction
+    swi 0
+    mov r6, r0                @ store how many was read from the file
+
+    @ Check is finished to read or an error was happened
+    cmp r6, #0
+    ble end_load_data         @ If r6 <= 0, singed less equal
+
+    @@ call reverberation vs inverse
+
+    @ Write on the output.bin with buffer
+    mov r7, #4                @ syscall
+    mov r0, r5                @ r0 load output.bin direction
+    ldr r1, =buffer           @ r1 load buffer direction
+    mov r2, r6                @ r2 how many byte were read it
+    swi 0
+
+    @ Star again
+    b loop_load_data
+end_load_data:
+  pop {r4-r11,lr}
+  mov pc, lr
+
+
+
 _start:
   @ Open the file
   mov r7, #5            
@@ -33,32 +111,10 @@ _start:
   mov r5, r0
 
 
-  mov r6, #0    @ Inicializar contador de bytes leídos/escritos
+  mov r0, r4       @ read input.bin address
+  mov r1, r5       @ write output.bin address
+  bl load_data
 
-loop_read:
-
-  @ Read the input.bin with buffer
-  mov r7, #3                @ syscall
-  ldr r0, =buffer_size
-  ldr r2, [r0]              @ r2 load size buffer
-  mov r0, r4                @ r0 load input.bin direction
-  ldr r1, =buffer           @ r1 buffer direction
-  swi 0
-  mov r6, r0                @ store how many was read from the file
-
-  @ Check is finished to read or an error was happened
-  cmp r6, #0
-  ble _end             @ If r6 <= 0, singed less equal
-
-  @ Write on the output.bin with buffer
-  mov r7, #4                @ syscall
-  mov r0, r5                @ r0 load output.bin direction
-  ldr r1, =buffer           @ r1 load buffer direction
-  mov r2, r6                @ r2 how many byte were read it
-  swi 0
-
-  @ Star again
-  b loop_read
 
 _end:
   @ Close input
