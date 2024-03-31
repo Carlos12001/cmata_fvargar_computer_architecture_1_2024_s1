@@ -22,13 +22,39 @@ reverberation:
   mov r6, r0                @ Initialize byte_read_counter
   mov r8, r1                @ Initialize offset
   mov r9, r2                @ load circular address (n_k)  
-  mov r10, r3               @ load buffer address (n)
+  
+check1: @ reviso los parametros
+  ldr r0, =k
+  ldr r4, [r0] @ load value k into r4
+  ldr r0, =alpha
+  ldr r5, [r0] @ load value alpha into r5
+  ldr r0, =circular_size
+  ldr r7, [r0] @ load value circular_size into r7
+  ldr r10, =buffer @ load address into r11
+  mov r11, r10 @ load address into r11
+  ldr r12, =circular @ load address into r12
+check2: @ reviso los valores de saved variables
+  for_reverberation:
+    add r0, r11, r6    @ max value address of buffer (buffer+counter_byte_read)
+    cmp r10, r0         @ compare buffer counter (n) and max value address buffer
+    bhs end_for_reverberation @ if r10>=r0 goto end_for
 
+    @ calculate reverberation
+    ldr r0, [r10]       @ load x[n] value into r0
+    @ apply reverberation
+    add r3, r0, #1      @ temp = x[n] + 1
 
-end_reverberation:
+    @ save on buffer y[n] to replace last x[n]
+    str r3, [r10]      @ write y[n] in buffer
+    add r10, #4 @ increase address n
+    b for_reverberation
+
+  end_for_reverberation:
   mov r0, #0
   mov r1, r8
   mov r2, r9
+
+end_reverberation:
   pop {r4-r11,lr}
   mov pc, lr
 
@@ -92,7 +118,6 @@ load_data:
   mov r6, #0                @ Initialize byte_read_counter
   mov r8, #0                @ Initialize offset
   ldr r9, =circular         @ load circular address (n_k)  
-  ldr r10, =buffer          @ load buffer address (n)
 
   loop_load_data:
 
@@ -118,7 +143,6 @@ load_data:
     mov r0, r6                  @ r0 parameter (counter byte was read)
     mov r1, r8                  @ r1 parameter (offset)
     mov r2, r9                  @ r2 parameter (n_k init of circular)
-    mov r3, r10                 @ r3 parameter (n init of buffer)
 
     if_reverberation_load_data:
       cmp r11, #1                         @ if r1!=1 go elseif_inverse 
