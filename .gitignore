@@ -253,3 +253,12 @@ src/create_file
 *.disassembly
 *.csv
 src/buffer
+input.bin
+input.wav
+output.bin
+output.wav
+src/input.wav
+src/output.wav
+src/output.bin
+src/main
+src/test/main
