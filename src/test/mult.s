@@ -2,22 +2,54 @@
 .global _start
 
 multiply_fixed_point:
-  PUSH {R4-R6, LR}           @ Save registers and return address
+  PUSH {R4-R6, LR}
+  MOV R2, R0
+  MOV R3, R1
+  CMP R0, #0
+  RSBMI R0, R0, #0
 
-  UMULL R4, R5, R0, R1       @ Multiply R0 by R1, result in R4 (low) and R5 (high), para no sobrescribir R1 y R2
+  CMP R1, #0
+  RSBMI R1, R1, #0
+  UMULL R4, R5, R0, R1
+  EOR R2, R2, R3
 
-  MOV R6, #30                @ Prepare to shift by 30 bits to adjust for fixed point
-  LSR R4, R4, R6             @ Shift the lower bits of the result to the right by 30
-  ORR R4, R4, R5, LSL #2     @ Combine with the upper bits shifted. El resultado ajustado ahora está en R4.
+  TST R2, #0x80000000
+  RSBMI R4, R4, #0
+  RSBMI R5, R5, #0
+  ORRMI R4, R4, #0x80000000
+  MOV R6, #30
 
-  MOV R0, R4                 @ Mueve el resultado ajustado a R0, manteniendo R1 y R2 intactos con los valores originales
-  POP {R4-R6, PC}            @ Restore registers and return
-  
+  LSR R4, R4, R6
+  ORR R4, R4, R5, LSL #2
+  MOV R0, R4
+  POP {R4-R6, PC}
+
 
 _start:
-  MOV R0, #(1<<30)           @ Primer número en Q1.30, equivalente a 0.25
-  MOV R1, R0                 
-  BL multiply_fixed_point    
+  ldr r10, =0xeccccccd         @-0.3
+  ldr R11, =0x2ccccccd         @0.7
+  
+  mov r0, r10
+  mov r1, r10
+  BL multiply_fixed_point
+  mov r4, r0  @0.09
+  
+  mov r0, r11
+  mov r1, r11
+  BL multiply_fixed_point
+  mov r5, r0 @0.49
+  
+  mov r0, r10
+  mov r1, r11
+  BL multiply_fixed_point
+  mov r6, r0  @-0.21
+  
+  mov r0, r11
+  mov r1, r10
+  BL multiply_fixed_point
+  mov r7, r0 @-0.21
 
-  B .                        
+ 
+  
+  B .                           
 
