@@ -75,5 +75,5 @@ if __name__ == "__main__":
     file_path = askopenfilename(title='Select binary file', 
     filetypes=[('Binary files', '*.bin')])
     if file_path: # If a file was selected
-        csv_path = 'output.csv' # Define the CSV output path
+        csv_path = file_path.replace(".bin", ".csv") # Define the CSV output path
         read_and_convert(file_path, csv_path)
