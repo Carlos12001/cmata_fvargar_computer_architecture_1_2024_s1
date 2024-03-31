@@ -15,6 +15,39 @@
 
 .section .text
 
+
+
+reverberation:
+  push {r4-r11,lr}
+  mov r6, r0                @ Initialize byte_read_counter
+  mov r8, r1                @ Initialize offset
+  mov r9, r2                @ load circular address (n_k)  
+  mov r10, r3               @ load buffer address (n)
+
+
+end_reverberation:
+  mov r0, #0
+  mov r1, r8
+  mov r2, r9
+  pop {r4-r11,lr}
+  mov pc, lr
+
+
+inverse:
+  push {r4-r11,lr}
+  mov r6, r0                @ Initialize byte_read_counter
+  mov r8, r1                @ Initialize offset
+  mov r9, r2                @ load circular address (n_k)  
+  mov r10, r3               @ load buffer address (n)
+
+end_inverse:
+  mov r0, #0
+  mov r1, r8
+  mov r2, r9
+  pop {r4-r11,lr}
+  mov pc, lr
+
+
 load_data:
   push {r4-r11,lr}
   mov r4, r0
@@ -59,6 +92,7 @@ load_data:
   mov r6, #0                @ Initialize byte_read_counter
   mov r8, #0                @ Initialize offset
   ldr r9, =circular         @ load circular address (n_k)  
+  ldr r10, =buffer          @ load buffer address (n)
 
   loop_load_data:
 
@@ -72,10 +106,37 @@ load_data:
     mov r6, r0                @ store how many was read from the file
 
     @ Check is finished to read or an error was happened
+    mov r0, #0                @ successful exit
     cmp r6, #0
     ble end_load_data         @ If r6 <= 0, singed less equal
 
-    @@ call reverberation vs inverse
+    @ call reverberation or inverse
+    ldr r0, =mode               
+    ldr r11, [r0]               @ load the value of mode on r11
+
+    @ load parameters of the function
+    mov r0, r6                  @ r0 parameter (counter byte was read)
+    mov r1, r8                  @ r1 parameter (offset)
+    mov r2, r9                  @ r2 parameter (n_k init of circular)
+    mov r3, r10                 @ r3 parameter (n init of buffer)
+
+    if_reverberation_load_data:
+      cmp r11, #1                         @ if r1!=1 go elseif_inverse 
+      bne elseif_inverse_load_data        
+      bl reverberation                    @ call function reverberation
+      b end_if_load_data
+    elseif_inverse_load_data:
+      cmp r11, #0                         @ if r1!=0 go else
+      bne else_load_data                  
+      bl inverse                          @ call function inverse
+      b end_if_load_data
+    else_load_data:
+      ldr r0, =0xffffffff                @ failed exit
+      b end_load_data                    @ incorrect value of mode (r11)
+    end_if_load_data:
+    
+    mov r8, r1                  @ save the value of the new offset
+    mov r9, r2                  @ save the value of the new n_k
 
     @ Write on the output.bin with buffer
     mov r7, #4                @ syscall
