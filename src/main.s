@@ -8,6 +8,9 @@
   buffer_size: .word 1024 @ immediate value of buffer_size
   circular: .space 22050 @ reserved circular buffer initialize in zero
   circular_size: .word 22050 @ immediate value of buffer_size
+  mode: .word 0           @ reserved space memory to save mode
+  k: .word 0              @ reserved space memory to save k
+  alpha: .word 0           @ reserved space memory to save alpha
 
 
 .section .text
