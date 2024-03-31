@@ -1,7 +1,7 @@
 import wave
 import numpy as np
 
-def wav_to_q(k,alpha,wav_filename,bin_filename="input.bin",q=30):
+def wav_to_q(mode,k,alpha,wav_filename,bin_filename="input.bin",q=30):
     """
     Convert WAV to binary format, with additional parameters k and alpha.
     
@@ -12,6 +12,8 @@ def wav_to_q(k,alpha,wav_filename,bin_filename="input.bin",q=30):
     bin_filename (str): Name of the output binary file.
     q (int): Number of bits for the fractional part of the output.
     """
+    if not isinstance(mode, bool):
+        raise TypeError("reverberation must be a boolean")
     if not isinstance(k, int):
         raise TypeError("k must be an integer")
     if not isinstance(alpha, float):
@@ -49,6 +51,9 @@ def wav_to_q(k,alpha,wav_filename,bin_filename="input.bin",q=30):
         
         # Convert to Q floating point
         q_samples = np.int32(normalized_samples * 2**q)
+
+        # Prepare mode for writing
+        r_uinit32 = np.array([int(mode)], dtype=np.uint32)
         
         # Prepare k and alpha for writing; k as uint32, alpha as Q format
         k_uint32 = np.array([k*4], dtype=np.uint32)
@@ -57,6 +62,7 @@ def wav_to_q(k,alpha,wav_filename,bin_filename="input.bin",q=30):
         
         # Write to binary file
         with open(bin_filename, "wb") as bin_file:
+            r_uinit32.tofile(bin_file)  # Write mode
             k_uint32.tofile(bin_file)  # Write k
             bin_file.write(alpha_int32.tobytes())  # Write alpha
             q_samples.tofile(bin_file)  # Write audio data
@@ -79,7 +85,7 @@ if __name__ == "__main__":
         
         
         try:
-            wav_to_q(k,alpha,wavfile,output)
+            wav_to_q(True,k,alpha,wavfile,output)
 
             print(( f"The file {wavfile} was successfully converted to {output}"
                     f" with k={k} and alpha={alpha}."))

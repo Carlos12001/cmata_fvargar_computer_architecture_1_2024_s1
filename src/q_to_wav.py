@@ -12,6 +12,7 @@ def q_to_wav(bin_filename, wav_filename, q=30):
     """
     with open(bin_filename, "rb") as bin_file:
         # Read and ignore k and alpha values
+        mode = (np.fromfile(bin_file, dtype=np.uint32, count=1))
         k = np.fromfile(bin_file, dtype=np.uint32, count=1)
         alpha = np.fromfile(bin_file, dtype=np.int32, count=1)
         
@@ -46,7 +47,7 @@ if __name__ == "__main__":
     if file_path: # If a file was selected
 
         bin_filename = file_path
-        wav_filename = "output.wav"
+        wav_filename = file_path.replace(".bin", ".wav")
         
         try:
             q_to_wav(bin_filename, wav_filename)
