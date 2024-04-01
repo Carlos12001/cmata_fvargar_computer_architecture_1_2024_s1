@@ -20,10 +20,8 @@
 reverberation:
   push {r4-r11,lr}
   mov r6, r0                @ Initialize byte_read_counter
-  mov r8, r1                @ Initialize offset
-  mov r9, r2                @ load circular address (n_k)  
+  mov r8, r1                @ load circular address (n_k)  
   
-check1: @ reviso los parametros
   ldr r0, =k
   ldr r4, [r0] @ load value k into r4
   ldr r0, =alpha
@@ -33,16 +31,40 @@ check1: @ reviso los parametros
   ldr r10, =buffer @ load address into r11
   mov r11, r10 @ load address into r11
   ldr r12, =circular @ load address into r12
-check2: @ reviso los valores de saved variables
+
   for_reverberation:
     add r0, r11, r6    @ max value address of buffer (buffer+counter_byte_read)
     cmp r10, r0         @ compare buffer counter (n) and max value address buffer
     bhs end_for_reverberation @ if r10>=r0 goto end_for
 
-    @ calculate reverberation
+    sub r0, r8, r4    @ Make n_k - k
+    if_circular_access_reverberation:
+      cmp r0, r12     @ =circular < n_k-k
+      blo else_circular_access_reverberation
+      ldr r3, [r0]     @ y_old = circular [n_k-k]
+      b end_if_circular_access_reverberation
+    else_circular_access_reverberation:
+      ldr r3, [r0, r7]     @ y_old = circular [n_k - k + circular_size]
+    end_if_circular_access_reverberation:
+
     ldr r0, [r10]       @ load x[n] value into r0
     @ apply reverberation
-    add r3, r0, #1      @ temp = x[n] + 1
+    add r0, r0, #1      @ temp = x[n] + 1
+    add r3, r3, r0      @ y[n] = temp + y_old 
+
+
+    @ save on circular y[n] to replace last y_old used
+    str r3, [r8]         @ save value y[n] on circular
+    add r8, #4       @ increase n_k+4 to advanced in circular
+    
+    add r0, r12, r7   @ =circular + circular_size
+    @ Check if n_k need to return original address circular
+    if_nk_max_reverberation:
+      cmp r8, r0
+      blo end_if_nk_max_reverberation
+      ldr r8, =circular   @ return to initial address circular
+    end_if_nk_max_reverberation:
+
 
     @ save on buffer y[n] to replace last x[n]
     str r3, [r10]      @ write y[n] in buffer
@@ -52,7 +74,6 @@ check2: @ reviso los valores de saved variables
   end_for_reverberation:
   mov r0, #0
   mov r1, r8
-  mov r2, r9
 
 end_reverberation:
   pop {r4-r11,lr}
@@ -116,8 +137,7 @@ load_data:
 
   @ Set the variables
   mov r6, #0                @ Initialize byte_read_counter
-  mov r8, #0                @ Initialize offset
-  ldr r9, =circular         @ load circular address (n_k)  
+  ldr r8, =circular         @ load circular address (n_k)  
 
   loop_load_data:
 
@@ -159,8 +179,7 @@ load_data:
       b end_load_data                    @ incorrect value of mode (r11)
     end_if_load_data:
     
-    mov r8, r1                  @ save the value of the new offset
-    mov r9, r2                  @ save the value of the new n_k
+    mov r8, r1                  @ save the value of the new n_k
 
     @ Write on the output.bin with buffer
     mov r7, #4                @ syscall
