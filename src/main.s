@@ -199,7 +199,7 @@ inverse:
     add r3, r0, #0      @ y[n] = x[n] + 0
 
     ldr r0, [r10]       @ load x[n] value into r0
-    @ save on circular y[n] to replace last y_old used
+    @ save on circular x[n] to replace last y_old used
     str r0, [r8]         @ save value x[n] on circular
     add r8, #4       @ increase n_k+4 to advanced in circular
     
