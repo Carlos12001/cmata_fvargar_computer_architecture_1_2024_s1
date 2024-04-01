@@ -39,7 +39,7 @@ reverberation:
 
     sub r0, r8, r4    @ Make n_k - k
     if_circular_access_reverberation:
-      cmp r0, r12     @ =circular < n_k-k
+      cmp r0, r12     @ n_k-k < circular
       blo else_circular_access_reverberation
       ldr r3, [r0]     @ y_old = circular [n_k-k]
       b end_if_circular_access_reverberation
@@ -57,10 +57,10 @@ reverberation:
     str r3, [r8]         @ save value y[n] on circular
     add r8, #4       @ increase n_k+4 to advanced in circular
     
-    add r0, r12, r7   @ =circular + circular_size
+    add r0, r12, r7   @ circular + circular_size
     @ Check if n_k need to return original address circular
     if_nk_max_reverberation:
-      cmp r8, r0
+      cmp r8, r0      @ n_k < (circular) + circular_size
       blo end_if_nk_max_reverberation
       ldr r8, =circular   @ return to initial address circular
     end_if_nk_max_reverberation:
