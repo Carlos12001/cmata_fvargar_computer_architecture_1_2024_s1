@@ -15,17 +15,50 @@
 
 .section .text
 
+    
+multiply_fixed_point:
+  push {r4-r8, lr}
+  mov r7, r2
+  mov r2, #32
+  sub r8, r2, r7
+  
+  mov r2, r0
+  mov r3, r1
+  cmp r0, #0
+  rsbmi r0, r0, #0
 
+  cmp r1, #0
+  rsbmi r1, r1, #0
+  umull r4, r5, r0, r1
+  eor r2, r2, r3
 
+  tst r2, #0x80000000
+  rsbmi r4, r4, #0
+  rsbmi r5, r5, #0
+  orrmi r4, r4, #0x80000000
+  mov r6, r7
+
+  lsr r4, r4, r6
+  orr r4, r4, r5, lsl r8
+  mov r0, r4
+end_multiply_fixed_point:
+  pop {r4-r8, pc}
+
+@ Aplica la reverberation utiliza los valores del buffer (x[n])
+@ usa el y_old que se obtiene de circular[n_k-k] y guarda tanto en el
+@ calcula el y[n] y guarda en el circular[n_k] en la posicion actual n_k
+@ y deja el resultado en buffer remplazando los x[n].
+@ Parametros  
+@ r0: numero de bits leidos  (max_iter)
+@ r1: posicion del circular (n_k)
+@ Retorna
+@ r0: si tuvo exito el algoritmo
+@ r1: la posicion del circular que es n_k
 reverberation:
   push {r4-r11,lr}
   mov r6, r0                @ Initialize byte_read_counter
   mov r8, r1                @ load circular address (n_k)  
   
-  ldr r0, =k
-  ldr r4, [r0] @ load value k into r4
-  ldr r0, =alpha
-  ldr r5, [r0] @ load value alpha into r5
   ldr r0, =circular_size
   ldr r7, [r0] @ load value circular_size into r7
   ldr r10, =buffer @ load address into r11
@@ -37,6 +70,8 @@ reverberation:
     cmp r10, r0         @ compare buffer counter (n) and max value address buffer
     bhs end_for_reverberation @ if r10>=r0 goto end_for
 
+    ldr r0, =k
+    ldr r4, [r0] @ load value k into r4
     sub r0, r8, r4    @ Make n_k - k
     if_circular_access_reverberation:
       cmp r0, r12     @ n_k-k < circular
@@ -44,19 +79,45 @@ reverberation:
       ldr r3, [r0]     @ y_old = circular [n_k-k]
       b end_if_circular_access_reverberation
     else_circular_access_reverberation:
+      @ lsl r1, r7, #2
+      @ ldr r3, [r0, r1]     @ y_old = circular [n_k - k + 4*circular_size]
       ldr r3, [r0, r7]     @ y_old = circular [n_k - k + circular_size]
     end_if_circular_access_reverberation:
 
+    @ apply reverberation
+    @ mov r5, r3          @ saved y_old
+    @ mov r2, #30         @ set format q=r2
+    @ mov r0, #1          
+    @ lsl r0, r0, r2      @ get 1 in format q
+    @ ldr r3, =alpha
+    @ ldr r1, [r3]        @ load value alpha into r1
+    @ sub r1, r0, r1      @ 1 - alpha
+    @ ldr r0, [r10]       @ load x[n] value into r0
+    @ bl multiply_fixed_point
+    @ mov r4, r0          @ saved r4 = (1-alpha)*x[n]
+    @ ldr r3, =alpha      
+    @ ldr r0, [r3]        @ r0 = alpha
+    @ mov r1, r5          @ r1 = y_old
+    @ mov r2, #30         @ set format q=r2
+    @ bl multiply_fixed_point
+    @ mov r5, r0          @ saved r5 =  alpha*y_old
+    @ add r3, r4, r5      @ saved y = (1-alpha)*x[n] + alpha*y_old    
+
+
     ldr r0, [r10]       @ load x[n] value into r0
     @ apply reverberation
-    add r0, r0, #1      @ temp = x[n] + 1
-    add r3, r3, r0      @ y[n] = temp + y_old 
+    @ add r0, r0, #1      @ temp = x[n] + 1
+    @ add r3, r3, r0      @ y[n] = temp + y_old 
+
+    add r3, r0, #0      @ y[n] = x[n] + 0
 
 
     @ save on circular y[n] to replace last y_old used
     str r3, [r8]         @ save value y[n] on circular
     add r8, #4       @ increase n_k+4 to advanced in circular
     
+    @ lsl r1, r7, #2
+    @ add r0, r12, r1   @ circular + 4*circular_size
     add r0, r12, r7   @ circular + circular_size
     @ Check if n_k need to return original address circular
     if_nk_max_reverberation:
