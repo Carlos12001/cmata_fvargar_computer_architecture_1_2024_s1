@@ -22,7 +22,7 @@ def format_bin(byte_value):
     """
     return " ".join(f"{b:08b}"[:4] + "-" + f"{b:08b}"[4:] for b in byte_value[::-1])
 
-def read_and_convert(file_path, csv_path, q=30):
+def read_and_convert(file_path, csv_path, q=28):
     """
     Reads binary data from a file, converts it to various formats, and 
     writes the formatted data to a CSV file.

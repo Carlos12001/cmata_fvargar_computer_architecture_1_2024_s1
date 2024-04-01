@@ -1,7 +1,7 @@
 import wave
 import numpy as np
 
-def wav_to_q(k,alpha,wav_filename,bin_filename="input.bin",q=30):
+def wav_to_q(k,alpha,wav_filename,bin_filename="input.bin",q=28):
     """
     Convert WAV to binary format, with additional parameters k and alpha.
     

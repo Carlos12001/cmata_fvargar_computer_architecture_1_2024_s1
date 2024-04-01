@@ -1,7 +1,7 @@
 import numpy as np
 import wave
 
-def q_to_wav(bin_filename, wav_filename, q=30):
+def q_to_wav(bin_filename, wav_filename, q=28):
     """
     Convert a binary file back to WAV format, removing the initial k and alpha values.
     
