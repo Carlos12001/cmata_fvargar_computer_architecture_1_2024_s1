@@ -144,18 +144,90 @@ end_reverberation:
 inverse:
   push {r4-r11,lr}
   mov r6, r0                @ Initialize byte_read_counter
-  mov r8, r1                @ Initialize offset
-  mov r9, r2                @ load circular address (n_k)  
-  mov r10, r3               @ load buffer address (n)
+  mov r8, r1                @ load circular address (n_k)  
+  
+  ldr r0, =circular_size
+  ldr r7, [r0] @ load value circular_size into r7
+  ldr r10, =buffer @ load address into r11
+  mov r11, r10 @ load address into r11
+  ldr r12, =circular @ load address into r12
 
-end_inverse:
+  for_inverse:
+    add r0, r11, r6    @ max value address of buffer (buffer+counter_byte_read)
+    cmp r10, r0         @ compare buffer counter (n) and max value address buffer
+    bhs end_for_inverse @ if r10>=r0 goto end_for
+
+    ldr r0, =k
+    ldr r4, [r0] @ load value k into r4
+    sub r0, r8, r4    @ Make n_k - k
+    if_circular_access_inverse:
+      cmp r0, r12     @ n_k-k < circular
+      blo else_circular_access_inverse
+      ldr r3, [r0]     @ x_old = circular [n_k-k]
+      b end_if_circular_access_inverse
+    else_circular_access_inverse:
+      @ lsl r1, r7, #2
+      @ ldr r3, [r0, r1]     @ x_old = circular [n_k - k + 4*circular_size]
+      ldr r3, [r0, r7]     @ x_old = circular [n_k - k + circular_size]
+    end_if_circular_access_inverse:
+
+    @ apply inverse
+    @ mov r5, r3          @ saved x_old
+    @ mov r2, #30         @ set format q=r2
+    @ mov r0, #1          
+    @ lsl r0, r0, r2      @ get 1 in format q
+    @ ldr r3, =alpha
+    @ ldr r1, [r3]        @ load value alpha into r1
+    @ sub r1, r0, r1      @ 1/(1 - alpha)
+    @ ldr r0, [r10]       @ load x[n] value into r0
+    @ bl multiply_fixed_point
+    @ mov r4, r0          @ saved r4 = 1/(1-alpha)*x[n]
+    @ ldr r3, =alpha      
+    @ ldr r0, [r3]        @ r0 = alpha
+    @ mov r1, r5          @ r1 = x_old
+    @ mov r2, #30         @ set format q=r2
+    @ bl multiply_fixed_point
+    @ mov r5, r0          @ saved r5 =  alpha/(1 - alpha)*x_old
+    @ add r3, r4, r5      @ saved y = 1/(1-alpha)*x[n] + alpha/(1 - alpha)*x_old    
+
+
+    ldr r0, [r10]       @ load x[n] value into r0
+    @ apply inverse
+    @ add r0, r0, #1      @ temp = x[n] + 1
+    @ add r3, r3, r0      @ y[n] = temp + x_old 
+
+    add r3, r0, #0      @ y[n] = x[n] + 0
+
+    ldr r0, [r10]       @ load x[n] value into r0
+    @ save on circular y[n] to replace last y_old used
+    str r0, [r8]         @ save value x[n] on circular
+    add r8, #4       @ increase n_k+4 to advanced in circular
+    
+    @ lsl r1, r7, #2
+    @ add r0, r12, r1   @ circular + 4*circular_size
+    add r0, r12, r7   @ circular + circular_size
+    @ Check if n_k need to return original address circular
+    if_nk_max_inverse:
+      cmp r8, r0      @ n_k < (circular) + circular_size
+      blo end_if_nk_max_inverse
+      ldr r8, =circular   @ return to initial address circular
+    end_if_nk_max_inverse:
+
+
+    @ save on buffer y[n] to replace last x[n]
+    str r3, [r10]      @ write y[n] in buffer
+    add r10, #4 @ increase address n
+    b for_inverse
+
+  end_for_inverse:
   mov r0, #0
   mov r1, r8
-  mov r2, r9
+
+end_inverse:
   pop {r4-r11,lr}
   mov pc, lr
 
-
+@ Funcion que se encargar de cargar 1024 bytes en el buffer de leida
 load_data:
   push {r4-r11,lr}
   mov r4, r0
